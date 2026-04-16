@@ -55,3 +55,4 @@ std::vector<Equation> Equation::readFromFile(const std::string& filename) {
     file.close();
     return equations;
 }
+
