@@ -52,7 +52,7 @@ int main() {
     // Подсчёт баллов
     std::vector<int> scores(students.size(), 0);
     for (size_t i = 0; i < students.size(); ++i) {
-        for (const auto eq : equations) {
+        for (const auto& eq: equations) {
             Solution sol = students[i]->solve(eq);
             if (sol.isCorrectFor(eq)) {
                 scores[i]++;
