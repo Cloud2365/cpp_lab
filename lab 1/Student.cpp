@@ -27,8 +27,8 @@ Solution AverageStudent::solve(const Equation& eq) const {
         return Solution(x1, x2);
     }
     else {
-        double wrongRoot1 = (rand() % 20 - 10) + (rand() % 100) / 100.0;
-        double wrongRoot2 = (rand() % 20 - 10) + (rand() % 100) / 100.0;
+        double wrongRoot1 = (rand() % RANDOM_RANGE - RANDOM_RANGE/2) + (rand() % 100) / 100.0;
+        double wrongRoot2 = (rand() % RANDOM_RANGE - RANDOM_RANGE/2) + (rand() % 100) / 100.0;
         return Solution(wrongRoot1, wrongRoot2);
     }
 }
