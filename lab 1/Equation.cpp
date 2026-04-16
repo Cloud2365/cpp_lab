@@ -12,6 +12,17 @@ double Equation::discriminant() const {
 }
 
 void Equation::getRoots(double& x1, double& x2) const {
+
+    if (std::fabs(a) < EPS) {
+        if (std::fabs(b) < EPS) {
+            // Нет корней или бесконечно много
+            x1 = x2 = 0;
+        }
+        else {
+            x1 = x2 = -c / b;
+        }
+        return;
+    }
     double D = discriminant();
     double sqrtD = std::sqrt(D);
     x1 = (-b - sqrtD) / (2 * a);
@@ -20,6 +31,9 @@ void Equation::getRoots(double& x1, double& x2) const {
 }
 
 bool Equation::hasRealRoots() const {
+    if (std::fabs(a) < EPS) {
+        return std::fabs(b) > EPS;  
+    }
     return discriminant() >= -EPS;
 }
 
