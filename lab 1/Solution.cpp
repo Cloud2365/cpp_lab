@@ -21,3 +21,4 @@ bool Solution::isCorrectFor(const Equation& eq) const {
 
     return (std::fabs(s1 - correctX1) < EPS && std::fabs(s2 - correctX2) < EPS);
 }
+

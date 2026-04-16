@@ -45,3 +45,4 @@ Solution BadStudent::solve(const Equation& eq) const {
 }
 
 StudentType BadStudent::getType() const { return StudentType::BAD; }
+
