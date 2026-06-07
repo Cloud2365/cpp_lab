@@ -23,6 +23,8 @@ public:
 	void addNewGems();
 	int getCell(int row, int col) const;
 	void setCell(int row, int col, int value);
+	bool hasMatches();
+
 };
 #endif
 

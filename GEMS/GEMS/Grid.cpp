@@ -162,4 +162,43 @@ int Grid::getCell(int row, int col) const {
 void Grid::setCell(int row, int col, int value) {
     grid[row][col] = value;
 }
+bool Grid::hasMatches() {
+    std::vector<std::vector<bool>> visited(GRID_SIZE, std::vector<bool>(GRID_SIZE, false));
+
+    for (int row = 0; row < GRID_SIZE; row++) {
+        for (int col = 0; col < GRID_SIZE; col++) {
+            if (!visited[row][col] && grid[row][col] != -1) {
+                int color = grid[row][col];
+                std::vector<std::pair<int, int>> cluster;
+                std::queue<std::pair<int, int>> q;
+
+                q.push({ row, col });
+                visited[row][col] = true;
+
+                while (!q.empty()) {
+                    auto [r, c] = q.front(); q.pop();
+                    cluster.push_back({ r, c });
+
+                    int dr[] = { 1, -1, 0, 0 };
+                    int dc[] = { 0, 0, 1, -1 };
+
+                    for (int i = 0; i < 4; i++) {
+                        int nr = r + dr[i];
+                        int nc = c + dc[i];
+                        if (nr >= 0 && nr < GRID_SIZE && nc >= 0 && nc < GRID_SIZE &&
+                            !visited[nr][nc] && grid[nr][nc] == color) {
+                            visited[nr][nc] = true;
+                            q.push({ nr, nc });
+                        }
+                    }
+                }
+
+                if (cluster.size() >= 3) {
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
 

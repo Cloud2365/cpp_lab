@@ -38,16 +38,17 @@ void Game::processEvents() {
                 else {
                     if (grid.getCell(row, col) != -1 && std::abs(selectedRow - row) + std::abs(selectedCol - col) == 1) {
                         grid.swap(selectedRow, selectedCol, row, col);
-                        grid.processMatches(true);
+                        if (grid.hasMatches()) {
+                            grid.processMatches(true);
+                        }
+                        else {P
+                            grid.swap(selectedRow, selectedCol, row, col);
+                        }
                     }
                     waitingForSecond = false;
                     selectedRow = -1;
                     selectedCol = -1;
                 }
-            }
-        }
-    }
-}
 
 
 
