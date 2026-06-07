@@ -142,10 +142,15 @@ void Grid::applyGravity() {
     }
 }
 void Grid::addNewGems() {
+    static std::mt19937 rng(static_cast<unsigned>(
+        std::chrono::steady_clock::now().time_since_epoch().count()
+        ));
+    static std::uniform_int_distribution<int> dist(0, 7);
+
     for (int row = 0; row < GRID_SIZE; row++) {
         for (int col = 0; col < GRID_SIZE; col++) {
             if (grid[row][col] == -1) {
-                grid[row][col] = rand() % 8;
+                grid[row][col] = dist(rng);
             }
         }
     }
