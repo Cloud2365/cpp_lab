@@ -41,7 +41,7 @@ void Game::processEvents() {
                         if (grid.hasMatches()) {
                             grid.processMatches(true);
                         }
-                        else {P
+                        else {
                             grid.swap(selectedRow, selectedCol, row, col);
                         }
                     }
@@ -49,6 +49,10 @@ void Game::processEvents() {
                     selectedRow = -1;
                     selectedCol = -1;
                 }
+            }
+        }
+    }
+}
 
 
 

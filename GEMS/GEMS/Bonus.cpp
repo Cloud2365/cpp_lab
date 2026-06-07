@@ -34,8 +34,9 @@ void Bonus::tryDrop(const std::vector<std::pair<int,int>>& cluster, Grid& grid) 
     int bonusType = rand() % 2;
     if (bonusType == 0) {
         recolor(target, originalColor, grid);
-    } else {
-        bomb(grid);
+    }
+    else {
+        bomb(grid, target);   
     }
 }
 
@@ -70,14 +71,26 @@ void Bonus::recolor(const std::pair<int,int>& target, int originalColor, Grid& g
     }
 }
 
-void Bonus::bomb(Grid& grid) {
-    std::vector<std::pair<int,int>> nonEmpty;
+void Bonus::bomb(Grid& grid, const std::pair<int, int>& target) {
+    std::vector<std::pair<int, int>> nonEmpty;
     for (int r = 0; r < GRID_SIZE; r++) {
         for (int c = 0; c < GRID_SIZE; c++) {
             if (grid.getCell(r, c) != -1) {
-                nonEmpty.push_back({r, c});
+                nonEmpty.push_back({ r, c });
             }
         }
+    }
+
+    // Убедимся, что target есть в списке (добавим, если нет)
+    bool targetIncluded = false;
+    for (const auto& cell : nonEmpty) {
+        if (cell == target) {
+            targetIncluded = true;
+            break;
+        }
+    }
+    if (!targetIncluded && grid.getCell(target.first, target.second) != -1) {
+        nonEmpty.push_back(target);
     }
 
     int destroyed = 0;

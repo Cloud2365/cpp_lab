@@ -14,7 +14,7 @@ public:
 
 private:
     static void recolor(const std::pair<int, int>& target, int originalColor, Grid& grid);
-    static void bomb(Grid& grid);
+    static void bomb(Grid& grid, const std::pair<int, int>& target);
 };
 
 #endif
