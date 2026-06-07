@@ -1,20 +1,19 @@
-#pragma once
 #ifndef BONUS_H
 #define BONUS_H
 
-#include <vector>
-#include <utility>
+#include <SFML/Graphics.hpp>
 
-class Grid;
+class Grid;  
 
 class Bonus {
 public:
-    // Основной метод: попытаться выбросить бонус из кластера
-    static void tryDrop(const std::vector<std::pair<int, int>>& cluster, Grid& grid);
-
-private:
-    static void recolor(const std::pair<int, int>& target, int originalColor, Grid& grid);
-    static void bomb(Grid& grid, const std::pair<int, int>& target);
+    virtual ~Bonus() = default;
+    virtual void apply(Grid& grid) = 0; 
+    virtual void update(float dt) = 0;
+    virtual void draw(sf::RenderWindow& window) = 0;
+    virtual sf::FloatRect getBounds() const = 0;
+    virtual bool isActive() const = 0;
+    virtual void setPosition(float x, float y) = 0;
 };
 
 #endif

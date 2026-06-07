@@ -1,16 +1,23 @@
 #include "Game.h"
 #include "Constants.h"
+#include <cmath>
+#include <cstdlib>
+#include <ctime>
+#include <iostream>
 
-
-Game::Game(): window(sf::VideoMode(WINDOW_SIZE, WINDOW_SIZE), "GEMS")
+Game::Game()
+    : window(sf::VideoMode(WINDOW_SIZE, WINDOW_SIZE), "GEMS")
     , selectedRow(-1)
     , selectedCol(-1)
     , waitingForSecond(false) {
+    window.setFramerateLimit(60);
 }
 
 void Game::run() {
     while (window.isOpen()) {
+        float dt = 1.0f / 60.0f;
         processEvents();
+        update(dt);
         render();
     }
 }
@@ -36,7 +43,8 @@ void Game::processEvents() {
                     }
                 }
                 else {
-                    if (grid.getCell(row, col) != -1 && std::abs(selectedRow - row) + std::abs(selectedCol - col) == 1) {
+                    if (grid.getCell(row, col) != -1 &&
+                        std::abs(selectedRow - row) + std::abs(selectedCol - col) == 1) {
                         grid.swap(selectedRow, selectedCol, row, col);
                         if (grid.hasMatches()) {
                             grid.processMatches(true);
@@ -54,7 +62,10 @@ void Game::processEvents() {
     }
 }
 
-
+void Game::update(float dt) {
+    sf::FloatRect dummyBounds;
+    grid.updateBonuses(dt, dummyBounds);
+}
 
 void Game::render() {
     window.clear(sf::Color::Black);
@@ -63,10 +74,18 @@ void Game::render() {
     if (waitingForSecond && selectedRow != -1 && selectedCol != -1) {
         sf::RectangleShape highlight(sf::Vector2f(CELL_SIZE, CELL_SIZE));
         highlight.setPosition(selectedCol * CELL_SIZE, selectedRow * CELL_SIZE);
-        highlight.setFillColor(sf::Color(255, 255, 255, 100)); 
+        highlight.setFillColor(sf::Color(255, 255, 255, 100));
         window.draw(highlight);
     }
 
+    grid.drawBonuses(window);
     window.display();
+}
+
+int main() {
+    std::srand(static_cast<unsigned>(std::time(nullptr)));
+    Game game;
+    game.run();
+    return 0;
 }
 

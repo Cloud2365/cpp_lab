@@ -12,6 +12,7 @@ public:
 
 private:
     void processEvents();
+    void update(float dt);
     void render();
 
     sf::RenderWindow window;
@@ -21,4 +22,5 @@ private:
 };
 
 #endif
+
 

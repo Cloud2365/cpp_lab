@@ -2,24 +2,24 @@
 #include "Bonus.h"
 #include <random>
 #include <chrono>
- 
+#include <queue>
+#include <set>
 
-Grid::Grid() {
-	grid.resize(GRID_SIZE, std::vector<int>(GRID_SIZE, 0));
-	initRandom();
-
-}
 static const sf::Color COLORS[] = {
-	sf::Color::Blue,
-	sf::Color::Green,
-	sf::Color::Red,
-	sf::Color::Yellow,
-	sf::Color::Cyan,
-	sf::Color::Magenta,
-	sf::Color(255, 128, 0),
-	sf::Color(128, 0, 128)
+    sf::Color::Blue,
+    sf::Color::Green,
+    sf::Color::Red,
+    sf::Color::Yellow,
+    sf::Color::Cyan,
+    sf::Color::Magenta,
+    sf::Color(255, 128, 0),
+    sf::Color(128, 0, 128)
 };
 
+Grid::Grid() {
+    grid.resize(GRID_SIZE, std::vector<int>(GRID_SIZE, 0));
+    initRandom();
+}
 
 void Grid::initRandom() {
     static std::mt19937 rng(static_cast<unsigned>(
@@ -34,13 +34,12 @@ void Grid::initRandom() {
     }
     processMatches();
 }
-void Grid::draw(sf::RenderWindow& window) {
-    
-	for (int row = 0; row < GRID_SIZE; row++) {
-		for (int col = 0; col < GRID_SIZE; col++) {
 
-			sf::RectangleShape cell(sf::Vector2f(CELL_SIZE - 1, CELL_SIZE - 1));
-			cell.setPosition(col * CELL_SIZE, row * CELL_SIZE);
+void Grid::draw(sf::RenderWindow& window) {
+    for (int row = 0; row < GRID_SIZE; row++) {
+        for (int col = 0; col < GRID_SIZE; col++) {
+            sf::RectangleShape cell(sf::Vector2f(CELL_SIZE - 1, CELL_SIZE - 1));
+            cell.setPosition(col * CELL_SIZE, row * CELL_SIZE);
             int type = grid[row][col];
             if (type >= 0 && type < 8) {
                 cell.setFillColor(COLORS[type]);
@@ -48,16 +47,15 @@ void Grid::draw(sf::RenderWindow& window) {
             else {
                 cell.setFillColor(sf::Color(80, 80, 80));
             }
-			window.draw(cell);
-		}
-
-	}
+            window.draw(cell);
+        }
+    }
 }
-void Grid::swap(int r1, int c1, int r2, int c2) {
-	int temp = grid[r1][c1];
-	grid[r1][c1] = grid[r2][c2];
-	grid[r2][c2] = temp;
 
+void Grid::swap(int r1, int c1, int r2, int c2) {
+    int temp = grid[r1][c1];
+    grid[r1][c1] = grid[r2][c2];
+    grid[r2][c2] = temp;
 }
 
 void Grid::processMatches(bool refill) {
@@ -98,7 +96,6 @@ void Grid::processMatches(bool refill) {
 
                     if (cluster.size() >= 3) {
                         changed = true;
-                        Bonus::tryDrop(cluster, *this);
                         for (auto& p : cluster) {
                             toRemove[p.first][p.second] = true;
                         }
@@ -141,6 +138,7 @@ void Grid::applyGravity() {
         }
     }
 }
+
 void Grid::addNewGems() {
     static std::mt19937 rng(static_cast<unsigned>(
         std::chrono::steady_clock::now().time_since_epoch().count()
@@ -155,6 +153,7 @@ void Grid::addNewGems() {
         }
     }
 }
+
 int Grid::getCell(int row, int col) const {
     return grid[row][col];
 }
@@ -162,6 +161,7 @@ int Grid::getCell(int row, int col) const {
 void Grid::setCell(int row, int col, int value) {
     grid[row][col] = value;
 }
+
 bool Grid::hasMatches() {
     std::vector<std::vector<bool>> visited(GRID_SIZE, std::vector<bool>(GRID_SIZE, false));
 
@@ -200,5 +200,37 @@ bool Grid::hasMatches() {
         }
     }
     return false;
+}
+
+void Grid::addBonus(std::unique_ptr<Bonus> bonus) {
+    bonuses.push_back(std::move(bonus));
+}
+
+void Grid::updateBonuses(float dt, const sf::FloatRect& paddleBounds) {
+    for (auto it = bonuses.begin(); it != bonuses.end(); ) {
+        (*it)->update(dt);
+        if (!(*it)->isActive()) {
+            it = bonuses.erase(it);
+        }
+        else {
+            if ((*it)->getBounds().intersects(paddleBounds)) {
+                (*it)->apply(*this);
+                it = bonuses.erase(it);
+            }
+            else {
+                ++it;
+            }
+        }
+    }
+}
+
+void Grid::drawBonuses(sf::RenderWindow& window) {
+    for (auto& bonus : bonuses) {
+        bonus->draw(window);
+    }
+}
+
+bool Grid::hasActiveBonuses() const {
+    return !bonuses.empty();
 }
 
