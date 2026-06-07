@@ -1,5 +1,7 @@
 #include "Grid.h"
 #include "Bonus.h"
+#include <random>
+#include <chrono>
  
 
 Grid::Grid() {
@@ -18,14 +20,19 @@ static const sf::Color COLORS[] = {
 	sf::Color(128, 0, 128)
 };
 
-void Grid::initRandom() {
-	for (int row = 0; row < GRID_SIZE; row++) {
-		for (int col = 0; col < GRID_SIZE; col++) {
-			grid[row][col] = rand() % 8;
-		}
-	}
-    processMatches(true);
 
+void Grid::initRandom() {
+    static std::mt19937 rng(static_cast<unsigned>(
+        std::chrono::steady_clock::now().time_since_epoch().count()
+        ));
+    static std::uniform_int_distribution<int> dist(0, 7);
+
+    for (int row = 0; row < GRID_SIZE; row++) {
+        for (int col = 0; col < GRID_SIZE; col++) {
+            grid[row][col] = dist(rng);
+        }
+    }
+    processMatches();
 }
 void Grid::draw(sf::RenderWindow& window) {
     
