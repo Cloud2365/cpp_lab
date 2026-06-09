@@ -1,19 +1,31 @@
-#pragma once
 #ifndef GAME_H
 #define GAME_H
 
 #include <SFML/Graphics.hpp>
 #include <vector>
+#include <memory>
 #include "Ball.h"
 #include "Paddle.h"
 #include "Block.h"
 #include "Bonus.h"
 
 class Game {
-
 public:
     Game();
     void run();
+
+    // ћетоды дл€ бонусов
+    void addBonus(std::unique_ptr<Bonus> bonus);
+    void enlargePaddle();
+    void shrinkPaddle();
+    void speedUpBall();
+    void slowDownBall();
+    void enableStickyMode();
+    void enableExtraBottom();
+    void randomizeBallTrajectory();
+
+    Paddle& getPaddle();
+    Ball& getBall();
 
 private:
     void processEvents();
@@ -21,16 +33,15 @@ private:
     void render();
     void spawnBlocks();
     void checkCollisions();
-    void applyBonus(BonusType type);
 
     sf::RenderWindow window;
     Ball ball;
     Paddle paddle;
-    std::vector<Block> blocks;
-    std::vector<Bonus> bonuses;
+    std::vector<std::unique_ptr<Block>> blocks;
+    std::vector<std::unique_ptr<Bonus>> bonuses;
     int score;
     int lives;
-    bool stickyMode;   // прилипание м€ча к каретке
+    bool stickyMode;
     bool extraBottom;
     bool extraBottomUsed;
     sf::Font font;

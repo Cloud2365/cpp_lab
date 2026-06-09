@@ -1,4 +1,3 @@
-#pragma once
 #ifndef PADDLE_H
 #define PADDLE_H
 
@@ -14,6 +13,7 @@ public:
     void setWidth(float width);
     sf::FloatRect getBounds() const;
     sf::Vector2f getPosition() const;
+    float getWidth() const;
 
 private:
     sf::RectangleShape shape;
@@ -23,3 +23,4 @@ private:
 };
 
 #endif
+

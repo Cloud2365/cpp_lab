@@ -1,15 +1,12 @@
-
 #include "Ball.h"
 #include "Constants.h"
 #include <cmath>
-#include <iostream>
 
 Ball::Ball() {
     shape.setRadius(BALL_RADIUS);
     shape.setFillColor(sf::Color::White);
     shape.setOrigin(BALL_RADIUS, BALL_RADIUS);
     stuck = true;
-
 }
 
 void Ball::update(float dt) {
@@ -25,6 +22,7 @@ void Ball::draw(sf::RenderWindow& window) {
 void Ball::setPosition(float x, float y) {
     shape.setPosition(x, y);
 }
+
 sf::Vector2f Ball::getPosition() const {
     return shape.getPosition();
 }
@@ -47,17 +45,16 @@ void Ball::setVelocity(float vx, float vy) {
 }
 
 void Ball::randomizeVelocity(float speed) {
-    float angle = (rand() % 360) * 3.14159f / 180.0f;
-    velocity.x = cos(angle) * speed;
-    velocity.y = sin(angle) * speed;
+    std::uniform_int_distribution<int> dist(0, 359);
+    float angle = dist(getRng()) * 3.14159f / 180.0f;
+    velocity.x = std::cos(angle) * speed;
+    velocity.y = std::sin(angle) * speed;
     stuck = false;
 }
 
 void Ball::stickToPaddle(float paddleX, float paddleY) {
     shape.setPosition(paddleX, paddleY - BALL_RADIUS);
     stuck = true;
-    //std::cout << "stickToPaddle: stuck = true" << std::endl;
-
 }
 
 bool Ball::isStuck() const {
@@ -66,12 +63,12 @@ bool Ball::isStuck() const {
 
 void Ball::release() {
     if (stuck) {
-        velocity = sf::Vector2f(200.0f, -200.0f);  // начальная скорость
+        velocity = sf::Vector2f(200.0f, -200.0f);
         stuck = false;
-
     }
 }
 
 sf::Vector2f Ball::getVelocity() const {
     return velocity;
 }
+

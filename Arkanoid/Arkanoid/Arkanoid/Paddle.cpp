@@ -1,6 +1,5 @@
 #include "Paddle.h"
 #include "Constants.h"
-#include <iostream>
 
 Paddle::Paddle() {
     width = PADDLE_WIDTH;
@@ -48,3 +47,8 @@ sf::FloatRect Paddle::getBounds() const {
 sf::Vector2f Paddle::getPosition() const {
     return sf::Vector2f(x, y);
 }
+
+float Paddle::getWidth() const {
+    return width;
+}
+

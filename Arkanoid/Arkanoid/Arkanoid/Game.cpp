@@ -1,33 +1,19 @@
-﻿// Game.cpp (основная логика)
-#include "Game.h"
+﻿#include "Game.h"
 #include "Constants.h"
+#include "BlockFactory.h"
 #include <cstdlib>
 #include <ctime>
 #include <iostream>
+#include <cmath>
 
 Game::Game() : window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Arkanoid") {
-    //window.setFramerateLimit(60);
-    srand(static_cast<unsigned>(time(nullptr)));
+    window.setFramerateLimit(60);
     score = 0;
     lives = INITIAL_LIVES;
     stickyMode = false;
     extraBottom = false;
     extraBottomUsed = false;
 
-
-   /* // Вариант 1: Arial.ttf (с заглавной буквы)
-    font.loadFromFile("D:/games/arial.ttf");
-
-    scoreText.setFont(font);
-    scoreText.setCharacterSize(20);
-    scoreText.setFillColor(sf::Color::White);
-    scoreText.setPosition(10, 10);
-
-    livesText.setFont(font);
-    livesText.setCharacterSize(20);
-    livesText.setFillColor(sf::Color::White);
-    livesText.setPosition(WINDOW_WIDTH - 100, 10);
-    */
 
     spawnBlocks();
 }
@@ -39,11 +25,9 @@ void Game::spawnBlocks() {
             float x = BLOCK_OFFSET_X + col * BLOCK_WIDTH;
             float y = BLOCK_OFFSET_Y + row * BLOCK_HEIGHT;
 
-            // Случайный тип блока
-            BlockType type = Block::getRandomBlockType();  // функция из Block.cpp
-            int health = (type == HEALTH) ? 2 : 1;
-            blocks.emplace_back(type, health);
-            blocks.back().setPosition(x, y);
+            auto block = BlockFactory::createRandomBlock();
+            block->setPosition(x, y);
+            blocks.push_back(std::move(block));
         }
     }
 }
@@ -52,6 +36,7 @@ void Game::run() {
     sf::Clock clock;
     while (window.isOpen()) {
         float dt = clock.restart().asSeconds();
+        if (dt > 0.033f) dt = 0.033f; 
         processEvents();
         update(dt);
         render();
@@ -68,31 +53,27 @@ void Game::processEvents() {
             if (ball.isStuck()) ball.release();
         }
     }
-
-
 }
 
 void Game::update(float dt) {
-    // Управление кареткой с учётом dt
+    // Управление кареткой
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
         paddle.moveLeft(dt);
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
         paddle.moveRight(dt);
 
-    // Если мяч прилип к каретке, следуем за ней
+    // Мяч
     if (ball.isStuck()) {
         ball.stickToPaddle(paddle.getPosition().x, paddle.getPosition().y - PADDLE_HEIGHT / 2);
     }
     else {
-        //std::cout << "Updating ball, dt=" << dt << std::endl;
         ball.update(dt);
     }
 
     // Проверка выхода мяча за нижнюю границу
-    if ( ball.getBounds().top + ball.getBounds().height > WINDOW_HEIGHT) {
+    if (ball.getBounds().top + ball.getBounds().height > WINDOW_HEIGHT) {
         if (extraBottom && !extraBottomUsed) {
             extraBottomUsed = true;
-            // дно отражает мяч
             ball.reboundY();
             ball.setPosition(ball.getBounds().left + ball.getBounds().width / 2, WINDOW_HEIGHT - 20);
         }
@@ -102,20 +83,20 @@ void Game::update(float dt) {
                 window.close();
                 return;
             }
-            // сброс мяча на каретку
+ 
             ball.stickToPaddle(paddle.getPosition().x, paddle.getPosition().y - PADDLE_HEIGHT / 2);
         }
     }
 
     // Обновление бонусов
     for (auto it = bonuses.begin(); it != bonuses.end(); ) {
-        it->update(dt);
-        if (!it->isActive()) {
+        (*it)->update(dt);
+        if (!(*it)->isActive()) {
             it = bonuses.erase(it);
         }
         else {
-            if (it->getBounds().intersects(paddle.getBounds())) {
-                applyBonus(it->getType());
+            if ((*it)->getBounds().intersects(paddle.getBounds())) {
+                (*it)->apply(*this);
                 it = bonuses.erase(it);
             }
             else {
@@ -123,29 +104,31 @@ void Game::update(float dt) {
             }
         }
     }
-   
-    checkCollisions();
 
+    checkCollisions();
 }
 
-
 void Game::checkCollisions() {
-
     // Стены
-    if (ball.getBounds().left < 0 || ball.getBounds().left + ball.getBounds().width > WINDOW_WIDTH)
+    sf::FloatRect ballBounds = ball.getBounds();
+    if (ballBounds.left < 0 || ballBounds.left + ballBounds.width > WINDOW_WIDTH) {
         ball.reboundX();
-    if (ball.getBounds().top < 0)
+        ballBounds = ball.getBounds();
+    }
+    if (ballBounds.top < 0) {
         ball.reboundY();
+        ballBounds = ball.getBounds();
+    }
 
     // Каретка
-    if (!ball.isStuck() && ball.getBounds().intersects(paddle.getBounds())) {
-        float hitPos = ball.getBounds().left + ball.getBounds().width / 2 - paddle.getBounds().left;
+    if (!ball.isStuck() && ballBounds.intersects(paddle.getBounds())) {
+        float hitPos = ballBounds.left + ballBounds.width / 2 - paddle.getBounds().left;
         float paddleWidth = paddle.getBounds().width;
-        float angle = (hitPos / paddleWidth - 0.5f) * 1.2f; // от -0.6 до 0.6
+        float angle = (hitPos / paddleWidth - 0.5f) * 1.2f;
         sf::Vector2f vel = ball.getVelocity();
-        float speed = sqrt(vel.x * vel.x + vel.y * vel.y);
+        float speed = std::sqrt(vel.x * vel.x + vel.y * vel.y);
         vel.x = angle * speed;
-        vel.y = -sqrt(speed * speed - vel.x * vel.x);
+        vel.y = -std::sqrt(std::max(0.0f, speed * speed - vel.x * vel.x));
         ball.setVelocity(vel.x, vel.y);
         if (stickyMode && !ball.isStuck()) {
             ball.stickToPaddle(paddle.getPosition().x, paddle.getPosition().y - PADDLE_HEIGHT / 2);
@@ -153,44 +136,30 @@ void Game::checkCollisions() {
     }
 
     // Блоки
-// Блоки
     for (int i = 0; i < blocks.size(); ) {
-        sf::FloatRect ballBounds = ball.getBounds();
-        sf::FloatRect blockBounds = blocks[i].getBounds();
+        sf::FloatRect blockBounds = blocks[i]->getBounds();
+        ballBounds = ball.getBounds();
 
         if (ballBounds.intersects(blockBounds)) {
-            // Вычисляем перекрытие по каждой стороне
             float overlapLeft = ballBounds.left + ballBounds.width - blockBounds.left;
             float overlapRight = blockBounds.left + blockBounds.width - ballBounds.left;
             float overlapTop = ballBounds.top + ballBounds.height - blockBounds.top;
             float overlapBottom = blockBounds.top + blockBounds.height - ballBounds.top;
-
             float minOverlap = std::min({ overlapLeft, overlapRight, overlapTop, overlapBottom });
 
             if (minOverlap == overlapTop || minOverlap == overlapBottom) {
-                ball.reboundY(); // удар сверху/снизу
+                ball.reboundY();
             }
             else {
-                ball.reboundX(); // удар слева/справа
+                ball.reboundX();
             }
 
-            if (!blocks[i].isIndestructible()) {
-                if (blocks[i].givesSpeedBoost()) {
-                    sf::Vector2f vel = ball.getVelocity();
-                    vel *= 1.2f;
-                    ball.setVelocity(vel.x, vel.y);
-                }
-                if (blocks[i].hasBonus() && ball.getVelocity().y > 0) {
-                    int bonusType = rand() % 7;
-                    bonuses.emplace_back(static_cast<BonusType>(bonusType),
-                        blocks[i].getBounds().left + blocks[i].getBounds().width / 2,
-                        blocks[i].getBounds().top + blocks[i].getBounds().height);
-                }
-                if (blocks[i].hit()) {
-                    score += SCORE_PER_HIT;
-                    blocks.erase(blocks.begin() + i);
-                    continue;
-                }
+            blocks[i]->onHit(ball, *this);
+
+            if (blocks[i]->hit()) {
+                score += blocks[i]->getScore();
+                blocks.erase(blocks.begin() + i);
+                continue;
             }
             ++i;
         }
@@ -200,51 +169,66 @@ void Game::checkCollisions() {
     }
 }
 
-void Game::applyBonus(BonusType type) {
-    switch (type) {
-    case ENLARGE_PADDLE:
-        paddle.setWidth(PADDLE_WIDTH * 1.5f);
-        break;
-    case SHRINK_PADDLE:
-        paddle.setWidth(PADDLE_WIDTH * 0.7f);
-        break;
-    case SPEED_UP_BALL:
-    {
-        sf::Vector2f vel = ball.getVelocity();
-        vel *= 1.3f;
-        ball.setVelocity(vel.x, vel.y);
-    }
-    break;
-    case SLOW_DOWN_BALL:
-    {
-        sf::Vector2f vel = ball.getVelocity();
-        vel *= 0.7f;
-        ball.setVelocity(vel.x, vel.y);
-    }
-    break;
-    case STICKY_PADDLE:
-        stickyMode = true;
-        break;
-    case EXTRA_LIFE_BOTTOM:
-        extraBottom = true;
-        extraBottomUsed = false;
-        break;
-    case RANDOM_TRAJECTORY:
-        ball.randomizeVelocity(BALL_SPEED);
-        break;
-    }
+void Game::addBonus(std::unique_ptr<Bonus> bonus) {
+    bonuses.push_back(std::move(bonus));
+}
+
+void Game::enlargePaddle() {
+    paddle.setWidth(PADDLE_WIDTH * 1.5f);
+}
+
+void Game::shrinkPaddle() {
+    paddle.setWidth(PADDLE_WIDTH * 0.7f);
+}
+
+void Game::speedUpBall() {
+    sf::Vector2f vel = ball.getVelocity();
+    vel *= 1.3f;
+    ball.setVelocity(vel.x, vel.y);
+}
+
+void Game::slowDownBall() {
+    sf::Vector2f vel = ball.getVelocity();
+    vel *= 0.7f;
+    ball.setVelocity(vel.x, vel.y);
+}
+
+void Game::enableStickyMode() {
+    stickyMode = true;
+}
+
+void Game::enableExtraBottom() {
+    extraBottom = true;
+    extraBottomUsed = false;
+}
+
+void Game::randomizeBallTrajectory() {
+    ball.randomizeVelocity(BALL_SPEED);
+}
+
+Paddle& Game::getPaddle() {
+    return paddle;
+}
+
+Ball& Game::getBall() {
+    return ball;
 }
 
 void Game::render() {
     window.clear(sf::Color::Black);
+
     ball.draw(window);
     paddle.draw(window);
-    for (auto& block : blocks) block.draw(window);
-    for (auto& bonus : bonuses) bonus.draw(window);
-    // обновление текста счёта и жизней
-    //scoreText.setString("Score: " + std::to_string(score));
-    //livesText.setString("Lives: " + std::to_string(lives));
-    //window.draw(scoreText);
-    //window.draw(livesText);
+
+    for (auto& block : blocks) {
+        block->draw(window);
+    }
+
+    for (auto& bonus : bonuses) {
+        bonus->draw(window);
+    }
+
+ 
+
     window.display();
 }
