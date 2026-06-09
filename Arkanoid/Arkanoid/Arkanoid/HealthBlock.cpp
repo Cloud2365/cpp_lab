@@ -30,9 +30,10 @@ int HealthBlock::getHealth() const {
     return health;
 }
 
-void HealthBlock::onHit(Ball& ball) {
-
+void HealthBlock::onHit(Ball& ball, Game& game) {
+   
 }
+
 
 int HealthBlock::getScore() const {
     return SCORE_PER_HIT;

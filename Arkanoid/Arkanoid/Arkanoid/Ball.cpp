@@ -63,7 +63,10 @@ bool Ball::isStuck() const {
 
 void Ball::release() {
     if (stuck) {
-        velocity = sf::Vector2f(200.0f, -200.0f);
+        float angle = (rand() % 91 - 45) * 3.14159f / 180.0f;  // от -45 до +45 градусов
+        float speed = 250.0f;
+        velocity.x = sin(angle) * speed;
+        velocity.y = -cos(angle) * speed;
         stuck = false;
     }
 }

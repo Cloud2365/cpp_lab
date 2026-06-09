@@ -11,7 +11,7 @@ public:
     sf::FloatRect getBounds() const override;
     bool hit() override;
     int getHealth() const override;
-    void onHit(Ball& ball) override;
+    void onHit(Ball& ball, Game& game) override;
     int getScore() const override;
 
 private:

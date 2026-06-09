@@ -139,20 +139,46 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Bonus.cpp" />
+    <ClCompile Include="BlockFactory.cpp" />
+    <ClCompile Include="BonusBlock.cpp" />
+    <ClCompile Include="BonusFactory.cpp" />
+    <ClCompile Include="EnlargePaddleBonus.cpp" />
+    <ClCompile Include="ExtraLifeBottomBonus.cpp" />
+    <ClCompile Include="HealthBlock.cpp" />
+    <ClCompile Include="IndestructibleBlock.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Ball.cpp" />
-    <ClCompile Include="Block.cpp" />
     <ClCompile Include="Game.cpp" />
+    <ClCompile Include="NormalBlock.cpp" />
     <ClCompile Include="Paddle.cpp" />
+    <ClCompile Include="RandomTrajectoryBonus.cpp" />
+    <ClCompile Include="ShrinkPaddleBonus.cpp" />
+    <ClCompile Include="SlowDownBallBonus.cpp" />
+    <ClCompile Include="SpeedBoostBlock.cpp" />
+    <ClCompile Include="SpeedUpBallBonus.cpp" />
+    <ClCompile Include="StickyPaddleBonus.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Ball.h" />
     <ClInclude Include="Block.h" />
+    <ClInclude Include="BlockFactory.h" />
     <ClInclude Include="Bonus.h" />
+    <ClInclude Include="BonusBlock.h" />
+    <ClInclude Include="BonusFactory.h" />
     <ClInclude Include="Constants.h" />
+    <ClInclude Include="EnlargePaddleBonus.h" />
+    <ClInclude Include="ExtraLifeBottomBonus.h" />
     <ClInclude Include="Game.h" />
+    <ClInclude Include="HealthBlock.h" />
+    <ClInclude Include="IndestructibleBlock.h" />
+    <ClInclude Include="NormalBlock.h" />
     <ClInclude Include="Paddle.h" />
+    <ClInclude Include="RandomTrajectoryBonus.h" />
+    <ClInclude Include="ShrinkPaddleBonus.h" />
+    <ClInclude Include="SlowDownBallBonus.h" />
+    <ClInclude Include="SpeedBoostBlock.h" />
+    <ClInclude Include="SpeedUpBallBonus.h" />
+    <ClInclude Include="StickyPaddleBonus.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
